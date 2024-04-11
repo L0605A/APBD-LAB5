@@ -9,13 +9,13 @@ public static class AnimalEndpoints
     {
         app.MapGet("/animals" , () =>
         {
-            var animal = StaticData.animals;
+            var animal = AnimalDatabase.animals;
             return Results.Ok(animal);
         });
 
         app.MapGet("/animals/{id}" , (int id) =>
         {
-            foreach(var ele in StaticData.animals)
+            foreach(var ele in AnimalDatabase.animals)
             {
                 if (ele.Id == id)
                 {
@@ -29,21 +29,38 @@ public static class AnimalEndpoints
 
         app.MapPost("/animals" , (Animal animal) =>
         {
-            
+            AnimalDatabase.animals.Add(animal);
             return Results.Created("", animal);
         });
 
-        app.MapPut("/animals/{id}" , (int id) =>
+        app.MapPut("/animals/{id}", (int id, Animal updatedAnimal) =>
         {
+            var existingAnimal = AnimalDatabase.animals.FirstOrDefault(a => a.Id == id);
 
-            return Results.Ok();
+            if (existingAnimal != null)
+            {
+                existingAnimal.Name = updatedAnimal.Name;
+                existingAnimal.Category = updatedAnimal.Category;
+                existingAnimal.Weight = updatedAnimal.Weight;
+                existingAnimal.FurColor = updatedAnimal.FurColor;
+                return Results.Ok(updatedAnimal);
+            }
+            return Results.NotFound();
+
         });
 
 
-        app.MapDelete("/animals/{id}" , (int id) =>
-        {
 
-            return Results.Ok();
+        app.MapDelete("/animals/{id}", (int id) =>
+        {
+            var animalToRemove = AnimalDatabase.animals.FirstOrDefault(a => a.Id == id);
+            if (animalToRemove != null)
+            {
+                AnimalDatabase.animals.Remove(animalToRemove);
+                return Results.Ok();
+            }
+            return Results.NotFound();
         });
+
     }
 }
